@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Manga {{.Manga.Name}}: Chapter {{.Chapter.Name}}</title>
+    <link rel="stylesheet" type="text/css" href="/asset/style.css">
+</head>
+
+<body>
+    <h1>Manga {{.Manga.Name}}</h1>
+    <h1>Chapter {{.Chapter.Name}}</h1>
+    {{range .Chapter.PageIDs}}
+    <div><img src="/p/{{.}}" class="page"></div>
+    {{end}}
+</body>
+
+</html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Ason Maser (Ason Manga Server)</title>
+    </head>
+    <body>
+        <ul>
+            {{range .}}
+            <li><a href="/m/{{.ID}}">{{.Name}}</a></li>
+            {{end}}
+        </ul>
+    </body>
+</html>

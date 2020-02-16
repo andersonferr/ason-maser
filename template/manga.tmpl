@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Manga {{.Name}}</title>
+    <link rel="stylesheet" type="text/css" href="/asset/style.css">
+</head>
+
+<body>
+    {{$manga := .}}
+    <h1>{{$manga.Name}}</h1>
+    <ul>
+    {{range $chapter := $manga.Chapters}}
+    <li><a href="/c/{{$chapter.ID}}">Chapter {{$chapter.Name}}</a></li>
+    {{end}}
+    </ul>
+</body>
+
+</html>
