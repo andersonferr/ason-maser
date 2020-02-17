@@ -7,9 +7,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"sort"
 	"strconv"
+	"syscall"
 	"text/template"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -28,6 +31,18 @@ func init() {
 func main() {
 	flag.Parse()
 
+	sigChan := make(chan os.Signal, 64)
+
+	signal.Notify(sigChan, os.Interrupt, os.Kill, syscall.SIGHUP)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		for sig := range sigChan {
+			log.Printf("signal %v received\n", sig)
+			cancel()
+		}
+	}()
+
 	mis, cis, pis, err := buildIndex(Root)
 	if err != nil {
 		log.Fatalf("ERROR: %v", err)
@@ -35,11 +50,29 @@ func main() {
 
 	repo := NewMangaRepository(mis, cis, pis)
 
-	ctx := context.Background()
 	app := NewApp(ctx, repo)
 
 	log.Printf("Started!")
-	log.Fatal(http.ListenAndServe(Addr, app.Handler()))
+
+	srv := http.Server{
+		Addr:    Addr,
+		Handler: app.Handler(),
+	}
+
+	go func() {
+		log.Fatal(srv.ListenAndServe())
+	}()
+
+	select {
+	case <-ctx.Done():
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		err := srv.Shutdown(ctxTimeout)
+		if err != nil {
+			log.Printf("error while shutting down the server (err: %v)", err)
+		}
+	}
 }
 
 type App struct {
